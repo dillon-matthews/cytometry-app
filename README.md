@@ -44,6 +44,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
+> Backend runs on [http://localhost:8000](http://localhost:8000)
+
 #### Frontend Setup
 
 ```bash
