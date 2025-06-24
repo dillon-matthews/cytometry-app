@@ -14,14 +14,6 @@ A full-stack application for analyzing immune cell population data from clinical
 
 ---
 
-## Quick Start
-
-### Prerequisites
-
-* Python 3.8+
-* Node.js 16+
-* npm or yarn
-
 ### Installation & Setup
 
 #### 1. Clone the repository
@@ -31,17 +23,28 @@ git clone https://github.com/dillon-matthews/cytometry-app.git
 cd cytometry-app
 ```
 
-####  Backend Setup
+#### Backend Setup
 
 ```bash
 cd backend
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the backend server
 python app.py
 ```
 
-> Backend runs on [http://localhost:8000](http://localhost:8000)
-
-#### 3. Frontend Setup
+#### Frontend Setup
 
 ```bash
 cd frontend
@@ -143,5 +146,5 @@ For hundreds of projects and thousands of samples:
 * **React + TypeScript**: Type safety and component reusability
 * **Modular components**: Independent, reusable analysis views
 * **RESTful API**: Standard HTTP operations for easy integration
-* **Responsive design**: Works on desktop and mobile devices
+* **Responsive design**: Works on desktop and most mobile devices
 * **Real-time updates**: Automatic refresh when data changes
