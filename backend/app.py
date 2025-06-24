@@ -9,10 +9,15 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://keen-truth-production-bf2f.up.railway.app",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 db = Database()
 
@@ -158,11 +163,14 @@ def get_frequencies():
 def response_analysis(params: FilterParams = Body(...)):
     clauses, args = [], []
     if params.condition is not None:
-        clauses.append("s.condition = ?"); args.append(params.condition)
+        clauses.append("s.condition = ?")
+        args.append(params.condition)
     if params.treatment is not None:
-        clauses.append("s.treatment = ?"); args.append(params.treatment)
+        clauses.append("s.treatment = ?")
+        args.append(params.treatment)
     if params.sample_type is not None:
-        clauses.append("s.sample_type = ?"); args.append(params.sample_type)
+        clauses.append("s.sample_type = ?")
+        args.append(params.sample_type)
     where = " AND ".join(clauses) or "1=1"
 
     query = f"""
@@ -198,12 +206,14 @@ def response_analysis(params: FilterParams = Body(...)):
             _, p = mannwhitneyu(yes_vals, no_vals, alternative="two-sided")
         else:
             p = 1.0
-        results.append(ResponseAnalysis(
-            population=pop,
-            responders=yes_vals,
-            non_responders=no_vals,
-            p_value=round(p, 4)
-        ))
+        results.append(
+            ResponseAnalysis(
+                population=pop,
+                responders=yes_vals,
+                non_responders=no_vals,
+                p_value=round(p, 4),
+            )
+        )
     return results
 
 
@@ -216,31 +226,37 @@ def baseline_summary():
       AND time_from_treatment_start=0
     """
     with db.get_conn() as conn:
-        cursor = conn.execute(f"""
+        cursor = conn.execute(
+            f"""
           SELECT project, COUNT(*) AS cnt
             FROM samples WHERE {filter_sql}
             GROUP BY project
-        """)
+        """
+        )
         samples_by_project = {r["project"]: r["cnt"] for r in cursor}
 
-        cursor = conn.execute(f"""
+        cursor = conn.execute(
+            f"""
           SELECT response, COUNT(DISTINCT subject) AS cnt
             FROM samples WHERE {filter_sql}
             GROUP BY response
-        """)
+        """
+        )
         subjects_by_response = {(r["response"] or "unknown"): r["cnt"] for r in cursor}
 
-        cursor = conn.execute(f"""
+        cursor = conn.execute(
+            f"""
           SELECT sex, COUNT(DISTINCT subject) AS cnt
             FROM samples WHERE {filter_sql}
             GROUP BY sex
-        """)
+        """
+        )
         subjects_by_sex = {(r["sex"] or "unknown"): r["cnt"] for r in cursor}
 
     return BaselineSummary(
         samples_by_project=samples_by_project,
         subjects_by_response=subjects_by_response,
-        subjects_by_sex=subjects_by_sex
+        subjects_by_sex=subjects_by_sex,
     )
 
 
@@ -248,38 +264,42 @@ def baseline_summary():
 def filter_summary(params: FilterParams = Body(...)):
     clauses, args = [], []
     if params.condition is not None:
-        clauses.append("condition = ?"); args.append(params.condition)
+        clauses.append("condition = ?")
+        args.append(params.condition)
     if params.treatment is not None:
-        clauses.append("treatment = ?"); args.append(params.treatment)
+        clauses.append("treatment = ?")
+        args.append(params.treatment)
     if params.sample_type is not None:
-        clauses.append("sample_type = ?"); args.append(params.sample_type)
+        clauses.append("sample_type = ?")
+        args.append(params.sample_type)
     if params.time_from_treatment_start is not None:
-        clauses.append("time_from_treatment_start = ?"); args.append(params.time_from_treatment_start)
+        clauses.append("time_from_treatment_start = ?")
+        args.append(params.time_from_treatment_start)
     where = " AND ".join(clauses) or "1=1"
 
     with db.get_conn() as conn:
         cursor = conn.execute(
             f"SELECT project, COUNT(*) AS cnt FROM samples WHERE {where} GROUP BY project",
-            args
+            args,
         )
         samples_by_project = {r["project"]: r["cnt"] for r in cursor}
 
         cursor = conn.execute(
             f"SELECT response, COUNT(DISTINCT subject) AS cnt FROM samples WHERE {where} GROUP BY response",
-            args
+            args,
         )
         subjects_by_response = {(r["response"] or "unknown"): r["cnt"] for r in cursor}
 
         cursor = conn.execute(
             f"SELECT sex, COUNT(DISTINCT subject) AS cnt FROM samples WHERE {where} GROUP BY sex",
-            args
+            args,
         )
         subjects_by_sex = {(r["sex"] or "unknown"): r["cnt"] for r in cursor}
 
     return FilterSummary(
         samples_by_project=samples_by_project,
         subjects_by_response=subjects_by_response,
-        subjects_by_sex=subjects_by_sex
+        subjects_by_sex=subjects_by_sex,
     )
 
 
@@ -287,13 +307,17 @@ def filter_summary(params: FilterParams = Body(...)):
 def filter_samples(params: FilterParams = Body(...)):
     clauses, args = [], []
     if params.condition is not None:
-        clauses.append("s.condition = ?"); args.append(params.condition)
+        clauses.append("s.condition = ?")
+        args.append(params.condition)
     if params.treatment is not None:
-        clauses.append("s.treatment = ?"); args.append(params.treatment)
+        clauses.append("s.treatment = ?")
+        args.append(params.treatment)
     if params.sample_type is not None:
-        clauses.append("s.sample_type = ?"); args.append(params.sample_type)
+        clauses.append("s.sample_type = ?")
+        args.append(params.sample_type)
     if params.time_from_treatment_start is not None:
-        clauses.append("s.time_from_treatment_start = ?"); args.append(params.time_from_treatment_start)
+        clauses.append("s.time_from_treatment_start = ?")
+        args.append(params.time_from_treatment_start)
     where = " AND ".join(clauses) or "1=1"
 
     query = f"""
@@ -321,4 +345,5 @@ def filter_samples(params: FilterParams = Body(...)):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
