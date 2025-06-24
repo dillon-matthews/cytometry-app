@@ -27,7 +27,7 @@ A full-stack application for analyzing immune cell population data from clinical
 #### 1. Clone the repository
 
 ```bash
-git clone (https://github.com/dillon-matthews/cytometry-app.git)
+git clone https://github.com/dillon-matthews/cytometry-app.git
 cd cytometry-app
 ```
 
